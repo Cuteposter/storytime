@@ -259,12 +259,12 @@ public class TextBox {
 		String[] parts;
 		formatted = "";
 		
-		String pattern;;
+		String pattern, sub;
 		// Create a Pattern object
-		Pattern p;
-		Matcher m;
+		Pattern p, ps;
+		Matcher m, ms;
 		for (String s: raw) {
-			pattern = "(\\[([A-z]):([A-z]+)\\]|\\[([A-z]):([0-9]):([A-z]+),([A-z]+)\\])+([A-z\\p{Punct}]*)";
+			pattern = "(\\[([A-z]):([A-z]+)\\]|\\[([A-z]):([0-9]+:*+)+([A-z]+),([A-z]+)\\])+([A-z\\p{Punct}]*)";
 			p = Pattern.compile(pattern);
 			m = p.matcher(s);
 			
@@ -290,9 +290,18 @@ public class TextBox {
 				
 				if (m.group(4) != null) { //Check for flag control
 					
-					int flag = Integer.parseInt(m.group(5));
+					sub = "[0-9]+";
+					ps = Pattern.compile(sub);
+					ms = ps.matcher(m.group(1));
 					
-					if(par.flags.get(flag)) {
+					boolean set = true;
+					int flag;
+					while(ms.find()){
+						flag = Integer.parseInt(ms.group(0));
+						set &= par.flags.get(flag);	//If any one flag is not set, the whole thing is false
+					}
+					
+					if(set) {
 						System.out.println(m.group(6));
 						formatted += m.group(6);
 					}else{
