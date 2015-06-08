@@ -10,6 +10,8 @@ import java.util.regex.Pattern;
 import org.newdawn.slick.Animation;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.Graphics;
+import org.newdawn.slick.Music;
+import org.newdawn.slick.Sound;
 import org.newdawn.slick.SpriteSheet;
 import org.newdawn.slick.TrueTypeFont;
 import org.newdawn.slick.Color;
@@ -18,12 +20,19 @@ import org.newdawn.slick.Input;
 import org.newdawn.slick.GameContainer;
 
 public class TextBox {
+	public final static int left = 0;
+	public final static int center = 1;
+	public final static int right  = 2;
+	
 	ThisGame par;
 	StoryNode[] paths;
+	String[] characters;
+	String emote, sfx;
 
 	TrueTypeFont font;
-	Image bg;
-	Image textBox, portrait;
+	Sound print, move, decide, skip, sound;
+	Image bg, textBox;
+	Image[] portrait;
 	SpriteSheet arrows, arrowsr;
 	Animation arrow, select;
 	Graphics box;
@@ -36,6 +45,7 @@ public class TextBox {
 	HashMap < Integer, Color > colorList = new HashMap < Integer, Color > ();
 	int cursor = 1;
 	int limiter = 0;
+	int speaker = left ;
 	int word, line, column, sel = 0;
 	String name = "";
 	List < String > textQueue = new ArrayList < String > ();
@@ -43,11 +53,34 @@ public class TextBox {
 
 	String[] options;
 	int[] flags;
+	int side;
 
-	public TextBox(ThisGame p, Character c, String m, String[] o, int[] f) throws SlickException {
+	public TextBox(ThisGame p, String[] c, int s, String e, String snd, String m, String[] o, int[] f) throws SlickException {
 		par = p;
-		color = c.c();
-		portrait = new Image(c.p());
+		characters = c;
+		speaker = s;
+		portrait = new Image[]{null, null, null};
+		
+		for(int i=0; i<characters.length; i++){
+			if(characters[i] != null) {
+				portrait[i] = Characters.imagedb.get(characters[i]);
+			}
+		}
+		
+		emote = e;
+		if(emote != null){
+			portrait[speaker] = Characters.imagedb.get(characters[speaker]+"-"+emote);
+		}
+		
+		color = Characters.colordb.get(characters[s]);
+		print = new Sound("res/sfx/text.wav");
+		move = new Sound("res/sfx/move.wav");
+		decide = new Sound("res/sfx/decide.wav");
+		skip = new Sound("res/sfx/skip.wav");
+		
+		if(sfx != null){
+			sound = new Sound("res/sfx/"+sfx);
+		}
 		
 		//Determine if text color should be white or black based on textbox background color
 		float Y = 0.2126f*color.r + 0.7152f*color.g + 0.0722f*color.b;
@@ -57,7 +90,7 @@ public class TextBox {
 		options = o;
 		flags = f;
 		text = m;
-		name = c.n();
+		name = Characters.namedb.get(characters[s]);
 	}
 	
 	public void init() throws SlickException{
@@ -85,7 +118,28 @@ public class TextBox {
 		System.out.println(formatText());
 	}
 	
-	public void reset() {
+	public void reset() throws SlickException {
+		portrait = new Image[]{null, null, null};
+		
+		for(int i=0; i<characters.length; i++){
+			if(characters[i] != null) {
+				//System.out.println("Creating portrait from "+Characters.database.get(characters[i]).p());
+				portrait[i] = Characters.imagedb.get(characters[i]);
+			}
+		}
+		
+		if(emote != null){
+			portrait[speaker] = Characters.imagedb.get(characters[speaker]+"-"+emote);
+		}
+		
+		name = Characters.namedb.get(characters[speaker]);
+		color = Characters.colordb.get(characters[speaker]);
+		
+		if(sfx != null){
+			sound = new Sound("res/sfx/"+sfx);
+			sound.play();
+		}
+
 		cursor = word = line = column = sel = 0;
 		colorList.clear();
 		System.out.println(text);
@@ -97,7 +151,16 @@ public class TextBox {
 		Input input = gc.getInput();
 		String[] words = formatted.split(" ");
 		
-		g.drawImage(portrait, 320-portrait.getWidth()/2, 48);
+		if(portrait[left] != null){
+			g.drawImage(portrait[left], 32, 48);
+		}
+		if(portrait[center]!=null){
+			g.drawImage(portrait[center], 320-portrait[center].getWidth()/2, 48);
+		}
+		if(portrait[right]!=null){
+			g.drawImage(portrait[right], 608 - portrait[right].getWidth(), 48);
+		}
+		
 		g.drawImage(textBox, 0, 360);
 		try {
 			//box.clear();
@@ -113,6 +176,7 @@ public class TextBox {
 			if (cursor < formatted.length() + 1 && limiter == 2) { //Use the limiter here to prevent overdraw and jaggies
 				System.out.print(formatted.substring(cursor - 1, cursor));
 				if (input.isKeyPressed(Input.KEY_SPACE) && cursor < formatted.length() + 1) {
+					skip.play();
 					//box.drawImage(bg, 0, 0, new Color(0.7f, 0.25f, 0.25f, 1f));
 					box.setFont(font);
 					box.setColor(tcolor);
@@ -172,7 +236,7 @@ public class TextBox {
 					line++;
 					column = 0;
 				}
-
+				print.play();
 				box.drawString(formatted.substring(cursor - 1, cursor), 24 + (font.getWidth("A") * column), 24 + (font.getHeight()) * line);
 				column++;
 			}
@@ -210,10 +274,12 @@ public class TextBox {
 			if (options != null) {
 				if (input.isKeyPressed(Input.KEY_UP) && sel > 0) {
 					sel--;
+					move.play();
 				}
 
 				if (input.isKeyPressed(Input.KEY_DOWN) && sel < options.length - 1) {
 					sel++;
+					move.play();
 				}
 
 				if (input.isKeyPressed(Input.KEY_SPACE)) {
@@ -225,6 +291,7 @@ public class TextBox {
 						//Update current story node to the current branch
 						par.currentNode = paths[sel];
 						par.currentNode.init();
+						decide.play();
 					} catch (Exception e) {}
 				}
 			}else if(paths != null) {

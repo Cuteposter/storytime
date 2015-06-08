@@ -13,18 +13,16 @@ import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.Input;
+import org.newdawn.slick.Music;
 import org.newdawn.slick.SlickException;
+import org.newdawn.slick.Sound;
 import org.newdawn.slick.TrueTypeFont;
 
 public class ThisGame extends BasicGame {
 	TextBox dialog;
 	TrueTypeFont f;
 	Image twods, gamestop;
-	
-	//Maps of values for character name, color, and portrait
-	HashMap<String, String> names;
-	HashMap<String, Color> colors;
-	HashMap<String, Image> pics;
+	Music music;
 	
 	public StoryNode currentNode;
 	public String foo = "foo";
@@ -39,6 +37,8 @@ public class ThisGame extends BasicGame {
 
 	@Override
 	public void init(GameContainer gc) throws SlickException {
+		Music music = new Music("res/song.ogg");
+		
 		//Init flag database
 		//Flag -1 is no flag
 		flags = new ArrayList < Boolean > ();
@@ -48,15 +48,15 @@ public class ThisGame extends BasicGame {
 
 		//All branching story nodes, and their text need to be defined here
 		//Game needs to be defined in reverse order
-		dialog = new TextBox(this, new TwoDS(), "foo", null, null);
+		dialog = new TextBox(this, new String[]{"2ds"}, TextBox.left, null, null, "foo", null, null);
 		dialog.init();
 		
 		//NODE END
-		StoryNode NE = new StoryNode(this, new TwoDS(), "Thanks for helping me make a tasty [C:green]sandwich. I really liked it!", null, null, null);
+		StoryNode NE = new StoryNode(this, new String[]{null,"vita"}, TextBox.center, null, null, "Thanks for helping me make a tasty [C:green]sandwich. I really liked it!", null, null, null);
 		
 		
 		//NODE 3, FROM NODE 2
-		StoryNode N3BA = new StoryNode(this, new TwoDS(), "Yummy! A [C:green][F:3:ham,turkey] on [C:blue][F:1:white,wheat] sandwich!", null, null, new StoryNode[] {
+		StoryNode N3BA = new StoryNode(this, new String[]{null,"vita"}, TextBox.center,  null, "yay.wav", "Yummy! A [C:green][F:3:ham,turkey] on [C:blue][F:1:white,wheat] sandwich!", null, null, new StoryNode[] {
 			NE
 		});
 		
@@ -64,7 +64,7 @@ public class ThisGame extends BasicGame {
 				N3BA, N3BA
 		};
 
-		StoryNode N2BA = new StoryNode(this, new TwoDS(), "What should the [C:blue]meat be?", new String[] {
+		StoryNode N2BA = new StoryNode(this, new String[]{"2ds",null,"vita"}, TextBox.left, "question", "wonder.wav", "What should the [C:blue]meat be?", new String[] {
 			"Ham", "Turkey"
 		}, new int[] {
 			3, 4
@@ -75,20 +75,20 @@ public class ThisGame extends BasicGame {
 		};
 
 		//NODE 1
-		StoryNode N1B1 = new StoryNode(this, new TwoDS(), "What should the [C:green]bread be?", new String[] {
+		StoryNode N1B1 = new StoryNode(this, new String[]{"2ds",null,"vita"}, TextBox.right , "question", "wonder.wav", "What should the [C:green]bread be?", new String[] {
 			"White", "Wheat"
 		}, new int[] {
 			1, 2
 		}, N2);
-		StoryNode N1B2 = new StoryNode(this, new TwoDS(), "HOLY SHIT I FUCKING HATE YOU [C:green]/v/", null, null, null);
-		StoryNode N1B3 = new StoryNode(this, new TwoDS(), "[C:red]AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", null, null, null);
+		StoryNode N1B2 = new StoryNode(this, new String[]{"2ds"}, TextBox.left, null, null, "HOLY SHIT I FUCKING HATE YOU [C:green]/v/", null, null, null);
+		StoryNode N1B3 = new StoryNode(this, new String[]{"2ds"}, TextBox.left,  null, null, "[C:red]AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", null, null, null);
 
 		StoryNode[] N1 = new StoryNode[] {
 			N1B1, N1B2, N1B3
 		};
 
 		//Set first node
-		currentNode = new StoryNode(this, new TwoDS(), "I'm pretty [C:blue]hungry today. Let's make a [C:green]sandwich! \nDo you want to help me make a [C:green]sandwich?", new String[] {
+		currentNode = new StoryNode(this, new String[] {null,"2ds"}, TextBox.center, null, null, "I'm pretty [C:blue]hungry today. Let's make a [C:green]sandwich! \nDo you want to help me make a [C:green]sandwich?", new String[] {
 			"Yes", "No", "MOOOOOOOOOOODS"
 		}, new int[] {
 			0, -1, -1
@@ -97,7 +97,7 @@ public class ThisGame extends BasicGame {
 		f = new TrueTypeFont(new Font("Consolas", Font.BOLD, 16), true);
 
 		gamestop = new Image("res/Gamestop.jpg");
-
+		//music.play();
 	}
 
 	@Override
