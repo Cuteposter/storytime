@@ -69,7 +69,7 @@ public class ThisGame extends BasicGame {
 			ps = Pattern.compile(sub);
 			
 			StoryNode tempNode;
-			String params, name, scene, characters, speaker, emote, sound, dialog, options, flagset, flagbra, children;
+			String params, name, scene, characters, speaker, emote, sound, music, dialog, options, flagset, flagbra, children;
 			
 			String[] charlist, emotes, chars, ops, flagss, flagsb, childs;
 			ArrayList<String> namelist = new ArrayList<String>();
@@ -136,11 +136,12 @@ public class ThisGame extends BasicGame {
 		    				speaker = params.split(", ")[2];
 		    				emote = params.split(", ")[3];
 		    				sound = params.split(", ")[4];
+		    				music = params.split(", ")[5];
 		    				dialog = ms.group(1);
-		    				options = params.split(", ")[6];
-		    				flagset = params.split(", ")[7];
-		    				flagbra = params.split(", ")[8];
-		    				children = params.split(", ")[9];
+		    				options = params.split(", ")[7];
+		    				flagset = params.split(", ")[8];
+		    				flagbra = params.split(", ")[9];
+		    				children = params.split(", ")[10];
 		    				
 		    				//Format the data into a usable form
 		    				characters = characters.replace("{", "").replace("}", "");
@@ -169,6 +170,10 @@ public class ThisGame extends BasicGame {
 		    				
 		    				if(sound.equals("null")) {
 		    					sound = null;
+		    				}
+		    				
+		    				if(music.equals("null")) {
+		    					music = null;
 		    				}
 		    				
 		    				dialog = dialog.replace("\"", "").replace("\\n", "\n");
@@ -220,7 +225,7 @@ public class ThisGame extends BasicGame {
 			    				}*/
 		    				}
 		    				
-		    				tempNode = new StoryNode(this, scene, chars, speak, emote, sound, dialog, ops, flagssf, flagsb, childs);
+		    				tempNode = new StoryNode(this, scene, chars, speak, emote, sound, music, dialog, ops, flagssf, flagsb, childs);
 		    				nodemap.put(name, tempNode);
 		    			}
 		    		}
