@@ -29,6 +29,7 @@ public class ThisGame extends BasicGame {
 	TrueTypeFont f;
 	Image twods, gamestop;
 	Music music;
+	Characters chardb;
 	
 	public HashMap<String, StoryNode> nodemap = new HashMap<String,StoryNode>();
 	public StoryNode currentNode;
@@ -44,10 +45,10 @@ public class ThisGame extends BasicGame {
 
 	@Override
 	public void init(GameContainer gc) throws SlickException {
-		Music music = new Music("res/song.ogg");
+		//Music music = new Music("res/song.ogg");
 		
 		//System.out.println("Working Directory = " +System.getProperty("user.dir"));
-		
+		chardb = new Characters();
 		
 		//Holy shit modle parser. I don't even want to describe it
 		try(BufferedReader in = new BufferedReader(new FileReader("./game.mod"))){
@@ -70,9 +71,9 @@ public class ThisGame extends BasicGame {
 			StoryNode tempNode;
 			String params, name, scene, characters, speaker, emote, sound, dialog, options, flagset, flagbra, children;
 			
-			String[] chars, ops, flagss, flagsb, childs;
+			String[] charlist, emotes, chars, ops, flagss, flagsb, childs;
+			ArrayList<String> namelist = new ArrayList<String>();
 			int[] flagssf;
-			StoryNode[] childsf;
 			int speak = 0;
 			
 		    while((line=in.readLine())!=null){
@@ -90,6 +91,32 @@ public class ThisGame extends BasicGame {
 		    			nodes = line.split("=")[1].split(", ");
 		    			for(String n : nodes) {
 		    				nodemap.put(n, null);
+		    			}
+		    		}else if(line.startsWith("characters")) {
+		    			charlist = line.split("=")[1].split(", ");
+		    			String[] vals;
+		    			String temp;
+		    			for(String c : charlist) {
+		    				temp = c.replace("{", "").replace("}", "");
+		    				temp = temp.replace("(", "").replace(")", "");
+		    				//System.out.println(temp);
+		    				vals = temp.split(",");
+		    				
+		    				int r = Integer.parseInt(vals[2]);
+		    				int g = Integer.parseInt(vals[3]);
+		    				int b = Integer.parseInt(vals[4]);
+		    				
+		    				namelist.add(vals[0]);
+		    				chardb.imagedb.put(vals[0], new Image("./res/char/"+vals[0]+".png"));
+		    				chardb.namedb.put(vals[0], vals[1]);
+		    				chardb.colordb.put(vals[0], new Color(r,g,b));
+		    			}
+		    		} else if(line.startsWith("emotes")) {
+		    			emotes = line.split("=")[1].split(", ");
+		    			for(String e : emotes) {
+		    				for(String c : namelist) {
+		    					chardb.imagedb.put(c+"-"+e, new Image("./res/char/"+c+"-"+e+".png"));
+		    				}
 		    			}
 		    		} else {	//Node?
 		    			m = p.matcher(line);
@@ -206,7 +233,7 @@ public class ThisGame extends BasicGame {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+		System.out.println(chardb.toString());
 		dialog = new TextBox(this, new String[]{"2ds"}, TextBox.left, null, null, "foo", null, null, null);
 		dialog.init();
 		

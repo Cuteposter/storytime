@@ -7,11 +7,11 @@ import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
 
 public class Characters {
-	public static HashMap<String, String> namedb = new HashMap<String, String>();
-	public static HashMap<String, Color> colordb = new HashMap<String, Color>();
-	public static HashMap<String, Image> imagedb = new HashMap<String, Image>();
+	public HashMap<String, String> namedb = new HashMap<String, String>();
+	public HashMap<String, Color> colordb = new HashMap<String, Color>();
+	public HashMap<String, Image> imagedb = new HashMap<String, Image>();
 	
-	static {
+	/*static {
 		try{
 			namedb.put("2ds", "2DS-tan");
 			colordb.put("2ds", new Color(255, 80, 120));
@@ -25,5 +25,9 @@ public class Characters {
 		}catch(SlickException e){
 			//System.err.println("Missing resource!!!);
 		}
+	}*/
+	
+	public String toString() {
+		return namedb.toString() +"\n"+ colordb.toString() +"\n"+ imagedb.toString();
 	}
 }

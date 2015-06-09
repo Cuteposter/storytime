@@ -29,7 +29,7 @@ public class StoryNode {
 		pflags = pf;
 		options = o;
 		
-		scene = new Image("res/bg/"+sc);
+		scene = new Image("./res/bg/"+sc);
 		
 		if (p != null)
 			paths = p;

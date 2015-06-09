@@ -63,23 +63,23 @@ public class TextBox {
 		
 		for(int i=0; i<characters.length; i++){
 			if(characters[i] != null) {
-				portrait[i] = Characters.imagedb.get(characters[i]);
+				portrait[i] = par.chardb.imagedb.get(characters[i]);
 			}
 		}
 		
 		emote = e;
 		if(emote != null){
-			portrait[speaker] = Characters.imagedb.get(characters[speaker]+"-"+emote);
+			portrait[speaker] = par.chardb.imagedb.get(characters[speaker]+"-"+emote);
 		}
 		
-		color = Characters.colordb.get(characters[s]);
-		print = new Sound("res/sfx/text.wav");
-		move = new Sound("res/sfx/move.wav");
-		decide = new Sound("res/sfx/decide.wav");
-		skip = new Sound("res/sfx/skip.wav");
+		color = par.chardb.colordb.get(characters[s]);
+		print = new Sound("./res/sfx/text.wav");
+		move = new Sound("./res/sfx/move.wav");
+		decide = new Sound("./res/sfx/decide.wav");
+		skip = new Sound("./res/sfx/skip.wav");
 		
 		if(sfx != null){
-			sound = new Sound("res/sfx/"+sfx);
+			sound = new Sound("./res/sfx/"+sfx);
 		}
 		
 		//Determine if text color should be white or black based on textbox background color
@@ -91,15 +91,15 @@ public class TextBox {
 		flags = f;
 		pflags = pf;
 		text = m;
-		name = Characters.namedb.get(characters[s]);
+		name = par.chardb.namedb.get(characters[s]);
 	}
 	
 	public void init() throws SlickException{
 		font = new TrueTypeFont(new Font("Consolas", Font.BOLD, 16), true);
-		textBox = new Image("res/gui/textBox.png");
-		bg = new Image("res/gui/textBox.png");
-		arrows = new SpriteSheet("res/gui/textDown.png", 16, 16);
-		arrowsr = new SpriteSheet("res/gui/textDown.png", 16, 16);
+		textBox = new Image("./res/gui/textBox.png");
+		bg = new Image("./res/gui/textBox.png");
+		arrows = new SpriteSheet("./res/gui/textDown.png", 16, 16);
+		arrowsr = new SpriteSheet("./res/gui/textDown.png", 16, 16);
 		arrow = new Animation(arrows, new int[] {
 			0, 0, 1, 0, 2, 0, 3, 0
 		}, new int[] {
@@ -124,20 +124,20 @@ public class TextBox {
 		
 		for(int i=0; i<characters.length; i++){
 			if(characters[i] != null) {
-				//System.out.println("Creating portrait from "+Characters.database.get(characters[i]).p());
-				portrait[i] = Characters.imagedb.get(characters[i]);
+				//System.out.println("Creating portrait from "+par.chardb.database.get(characters[i]).p());
+				portrait[i] = par.chardb.imagedb.get(characters[i]);
 			}
 		}
 		
 		if(emote != null){
-			portrait[speaker] = Characters.imagedb.get(characters[speaker]+"-"+emote);
+			portrait[speaker] = par.chardb.imagedb.get(characters[speaker]+"-"+emote);
 		}
 		
-		name = Characters.namedb.get(characters[speaker]);
-		color = Characters.colordb.get(characters[speaker]);
+		name = par.chardb.namedb.get(characters[speaker]);
+		color = par.chardb.colordb.get(characters[speaker]);
 		
 		if(sfx != null){
-			sound = new Sound("res/sfx/"+sfx);
+			sound = new Sound("./res/sfx/"+sfx);
 			sound.play();
 		}
 
