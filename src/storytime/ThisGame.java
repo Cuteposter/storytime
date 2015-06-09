@@ -1,10 +1,16 @@
 package storytime;
 
 import java.awt.Font;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.newdawn.slick.AppGameContainer;
 import org.newdawn.slick.BasicGame;
@@ -24,6 +30,7 @@ public class ThisGame extends BasicGame {
 	Image twods, gamestop;
 	Music music;
 	
+	public HashMap<String, StoryNode> nodemap = new HashMap<String,StoryNode>();
 	public StoryNode currentNode;
 	public String foo = "foo";
 	public ArrayList < Boolean > flags;
@@ -39,64 +46,173 @@ public class ThisGame extends BasicGame {
 	public void init(GameContainer gc) throws SlickException {
 		Music music = new Music("res/song.ogg");
 		
-		//Init flag database
-		//Flag -1 is no flag
-		flags = new ArrayList < Boolean > ();
-		for (int i = 0; i < 5; i++) {
-			flags.add(false);
-		}
+		//System.out.println("Working Directory = " +System.getProperty("user.dir"));
+		
+		
+		//Holy shit modle parser. I don't even want to describe it
+		try(BufferedReader in = new BufferedReader(new FileReader("./game.mod"))){
+		    String line;
+		    float ver;
+		    int f = 0;
+			flags = new ArrayList < Boolean > ();
+			String[] nodes;
+			
+    		String pattern, sub;
+    		// Create a Pattern object
+    		Pattern p, ps;
+    		Matcher m, ms;
+    		pattern = "([A-z]*[0-9]*[A-z]+[0-9]*)+\\((.*)\\)";
+			p = Pattern.compile(pattern);
+			
+			sub = "\\\"(.*?)\\\",";
+			ps = Pattern.compile(sub);
+			
+			StoryNode tempNode;
+			String params, name, scene, characters, speaker, emote, sound, dialog, options, flagset, flagbra, children;
+			
+			String[] chars, ops, flagss, flagsb, childs;
+			int[] flagssf;
+			StoryNode[] childsf;
+			int speak = 0;
+			
+		    while((line=in.readLine())!=null){
+		        if(line.startsWith("#Version")) {
+		        	ver = Float.parseFloat(line.split("=")[1]);
+		        }
+		        
+		        if(!line.startsWith("#")) {		    		
+		    		if(line.startsWith("flags")) {
+		    			f = Integer.parseInt(line.split("=")[1]);
+		    			for (int i = 0; i < f; i++) {
+		    				flags.add(false);
+		    			}
+		    		}else if(line.startsWith("nodes")) {
+		    			nodes = line.split("=")[1].split(", ");
+		    			for(String n : nodes) {
+		    				nodemap.put(n, null);
+		    			}
+		    		} else {	//Node?
+		    			m = p.matcher(line);
+		    			
+		    			if(m.find()){
+		    				params = m.group(2);
+		    				ms = ps.matcher(params);
+		    				if(ms.find()){
+		    					params = params.replace(ms.group(1), "@");
+		    				}
+		    				
+		    				//System.out.println(params);
+		    				
+		    				name = m.group(1);
+		    				scene = params.split(", ")[0];
+		    				characters  = params.split(", ")[1];
+		    				speaker = params.split(", ")[2];
+		    				emote = params.split(", ")[3];
+		    				sound = params.split(", ")[4];
+		    				dialog = ms.group(1);
+		    				options = params.split(", ")[6];
+		    				flagset = params.split(", ")[7];
+		    				flagbra = params.split(", ")[8];
+		    				children = params.split(", ")[9];
+		    				
+		    				//Format the data into a usable form
+		    				characters = characters.replace("{", "").replace("}", "");
+		    				chars = characters.split(",");
+		    				for(int i = 0; i<chars.length; i++) {
+		    					if(chars[i].equals("null")) {
+		    						chars[i] = null;
+		    					}
+		    				}
+		    				
+		    				switch(speaker) {
+		    					case "left":
+		    						speak = TextBox.left;
+		    						break;
+		    					case "center":
+		    						speak = TextBox.center;
+		    						break;
+		    					case "right":
+		    						speak = TextBox.right;
+		    						break;
+		    				}
+		    				
+		    				if(emote.equals("null")) {
+		    					emote = null;
+		    				}
+		    				
+		    				if(sound.equals("null")) {
+		    					sound = null;
+		    				}
+		    				
+		    				dialog = dialog.replace("\"", "").replace("\\n", "\n");
+		    				
+		    				
+		    				if(options.equals("null")) {
+		    					ops = null;
+		    				} else {
+			    				options = options.replace("{", "").replace("}", "");
+			    				ops = options.split(",");
+			    				for(int i = 0; i<ops.length; i++) {
+		    						ops[i] = ops[i].replace("\"", "");;
+			    				}
+		    				}
+		    				
 
-		//All branching story nodes, and their text need to be defined here
-		//Game needs to be defined in reverse order
-		dialog = new TextBox(this, new String[]{"2ds"}, TextBox.left, null, null, "foo", null, null);
+		    				if(flagset.equals("null")) {
+		    					flagssf = null;
+		    				} else {
+			    				flagset = flagset.replace("{", "").replace("}", "");
+			    				flagss = flagset.split(",");
+			    				flagssf = new int[flagss.length];
+			    				for(int i = 0; i<flagss.length; i++) {
+			    					flagssf[i] = Integer.parseInt(flagss[i]);
+			    				}
+		    				}
+		    				
+		    				if(flagbra.equals("null")) {
+		    					flagsb = null;
+		    				} else {
+			    				flagbra = flagbra.replace("{", "").replace("}", "");
+			    				flagsb = flagbra.split("\",");
+			    				for(int i = 0; i<flagsb.length; i++) {
+			    					if(!flagsb[i].endsWith("\"")){
+			    						flagsb[i] += "\"";
+			    					}
+			    					flagsb[i] = flagsb[i].replace("\"", "");;
+			    				}
+		    				}
+		    				
+		    				if(children.equals("null")) {
+		    					childs = null;
+		    				} else {
+			    				children = children.replace("{", "").replace("}", "");
+			    				childs = children.split(",");
+			    				/*childsf = new StoryNode[childs.length];
+			    				for(int i = 0; i<childs.length; i++) {
+			    					childsf[i] = nodemap.get(childs[i]);
+			    				}*/
+		    				}
+		    				
+		    				tempNode = new StoryNode(this, scene, chars, speak, emote, sound, dialog, ops, flagssf, flagsb, childs);
+		    				nodemap.put(name, tempNode);
+		    			}
+		    		}
+		        }
+		    }
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		dialog = new TextBox(this, new String[]{"2ds"}, TextBox.left, null, null, "foo", null, null, null);
 		dialog.init();
 		
-		//NODE END
-		StoryNode NE = new StoryNode(this, new String[]{null,"vita"}, TextBox.center, null, null, "Thanks for helping me make a tasty [C:green]sandwich. I really liked it!", null, null, null);
-		
-		
-		//NODE 3, FROM NODE 2
-		StoryNode N3BA = new StoryNode(this, new String[]{null,"vita"}, TextBox.center,  null, "yay.wav", "Yummy! A [C:green][F:3:ham,turkey] on [C:blue][F:1:white,wheat] sandwich!", null, null, new StoryNode[] {
-			NE
-		});
-		
-		StoryNode[] N3 = new StoryNode[] {
-				N3BA, N3BA
-		};
-
-		StoryNode N2BA = new StoryNode(this, new String[]{"2ds",null,"vita"}, TextBox.left, "question", "wonder.wav", "What should the [C:blue]meat be?", new String[] {
-			"Ham", "Turkey"
-		}, new int[] {
-			3, 4
-		}, N3);
-
-		StoryNode[] N2 = new StoryNode[] {
-			N2BA, N2BA
-		};
-
-		//NODE 1
-		StoryNode N1B1 = new StoryNode(this, new String[]{"2ds",null,"vita"}, TextBox.right , "question", "wonder.wav", "What should the [C:green]bread be?", new String[] {
-			"White", "Wheat"
-		}, new int[] {
-			1, 2
-		}, N2);
-		StoryNode N1B2 = new StoryNode(this, new String[]{"2ds"}, TextBox.left, null, null, "HOLY SHIT I FUCKING HATE YOU [C:green]/v/", null, null, null);
-		StoryNode N1B3 = new StoryNode(this, new String[]{"2ds"}, TextBox.left,  null, null, "[C:red]AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", null, null, null);
-
-		StoryNode[] N1 = new StoryNode[] {
-			N1B1, N1B2, N1B3
-		};
-
-		//Set first node
-		currentNode = new StoryNode(this, new String[] {null,"2ds"}, TextBox.center, null, null, "I'm pretty [C:blue]hungry today. Let's make a [C:green]sandwich! \nDo you want to help me make a [C:green]sandwich?", new String[] {
-			"Yes", "No", "MOOOOOOOOOOODS"
-		}, new int[] {
-			0, -1, -1
-		}, N1);
+		currentNode = nodemap.get("start");
 		currentNode.init();
 		f = new TrueTypeFont(new Font("Consolas", Font.BOLD, 16), true);
-
-		gamestop = new Image("res/Gamestop.jpg");
 		//music.play();
 	}
 
@@ -111,17 +227,10 @@ public class ThisGame extends BasicGame {
 
 	@Override
 	public void render(GameContainer gc, Graphics g) throws SlickException {
-		//text.arrow.update(60);
-
-		//if(currentNode == null) {
-		//System.exit(0);
-		//}
-
-		g.drawImage(gamestop, 0, 0);
+		currentNode.render(gc, g);
+		
 		g.drawString(flags.toString(), 32, 32);
-
-		//currentNode.render(gc, g);
-
+		
 		dialog.render(g, gc);
 		dialog.increment();
 	}

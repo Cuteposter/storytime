@@ -1,6 +1,7 @@
 package storytime;
 
 import java.awt.Font;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
@@ -10,7 +11,6 @@ import java.util.regex.Pattern;
 import org.newdawn.slick.Animation;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.Graphics;
-import org.newdawn.slick.Music;
 import org.newdawn.slick.Sound;
 import org.newdawn.slick.SpriteSheet;
 import org.newdawn.slick.TrueTypeFont;
@@ -25,8 +25,8 @@ public class TextBox {
 	public final static int right  = 2;
 	
 	ThisGame par;
-	StoryNode[] paths;
-	String[] characters;
+	String[] paths;
+	String[] characters, pflags;
 	String emote, sfx;
 
 	TrueTypeFont font;
@@ -55,7 +55,7 @@ public class TextBox {
 	int[] flags;
 	int side;
 
-	public TextBox(ThisGame p, String[] c, int s, String e, String snd, String m, String[] o, int[] f) throws SlickException {
+	public TextBox(ThisGame p, String[] c, int s, String e, String snd, String m, String[] o, int[] f, String[] pf) throws SlickException {
 		par = p;
 		characters = c;
 		speaker = s;
@@ -89,6 +89,7 @@ public class TextBox {
 
 		options = o;
 		flags = f;
+		pflags = pf;
 		text = m;
 		name = Characters.namedb.get(characters[s]);
 	}
@@ -144,9 +145,18 @@ public class TextBox {
 		colorList.clear();
 		System.out.println(text);
 		formatText();
+		
+		//TODO Debug, remove
+		if(flags != null){
+			System.out.println(Arrays.toString(flags));
+		}
+		
+		if(pflags != null){
+			System.out.println(Arrays.toString(pflags));
+		}
 	}
 
-	public void render(Graphics g, GameContainer gc) {
+	public void render(Graphics g, GameContainer gc) throws SlickException {
 		//Input input = gc.getInput();
 		Input input = gc.getInput();
 		String[] words = formatted.split(" ");
@@ -283,27 +293,79 @@ public class TextBox {
 				}
 
 				if (input.isKeyPressed(Input.KEY_SPACE)) {
-					try {
+					if(paths != null) {
 						//Set flags before chaning nodes
-						if (flags[sel] != -1) {
-							par.flags.set(flags[sel], true);
+						if(flags != null) {
+							if (flags[sel] != -1) {
+								par.flags.set(flags[sel], true);
+							}
 						}
+						
+						if(pflags != null){
+							boolean set = true;
+							int sf = -1;
+							for(int fi = 0; fi < pflags.length; fi++) {
+								String[] pf = pflags[fi].split(",");
+								for(String pff : pf) {
+									System.out.println("Checking "+pff);
+									set &= par.flags.get(Integer.parseInt(pff));	//If any one flag is not set, the whole thing is false
+									System.out.println(set);
+								}
+								if(set) {
+									sf = fi;
+								}
+							}
+							
+							par.currentNode = par.nodemap.get(paths[sf]);
+							par.currentNode.init();
+						}else{
 						//Update current story node to the current branch
-						par.currentNode = paths[sel];
+							if(paths.length > 1){
+								par.currentNode = par.nodemap.get(paths[sel]);
+							}else{
+								par.currentNode = par.nodemap.get(paths[0]);
+							}
+						}
 						par.currentNode.init();
 						decide.play();
-					} catch (Exception e) {}
+					}else{
+						 System.exit(1);
+					}
 				}
 			}else if(paths != null) {
-				if (paths.length == 1) {
-					if (input.isKeyPressed(Input.KEY_SPACE)) {
-						par.currentNode = paths[0];
+				if (input.isKeyPressed(Input.KEY_SPACE)) {
+					if (paths.length == 1 && pflags == null) {
+						par.currentNode = par.nodemap.get(paths[0]);
 						try {
 							par.currentNode.init();
 						} catch (SlickException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
+					}
+					
+					if(pflags != null){
+						boolean set;
+						int sf = -1;
+						for(int fi = 0; fi < pflags.length; fi++) {
+							String[] pf = pflags[fi].split(",");
+							set = true;
+							for(String pff : pf) {
+								System.out.println("Checking "+pff);
+								set &= par.flags.get(Integer.parseInt(pff));	//If any one flag is not set, the whole thing is false
+								System.out.println(set);
+							}
+							if(set) {
+								sf = fi;
+							} else {	//Fall through
+								if(sf == -1) {
+									sf = paths.length-1;
+								}
+							}
+						}
+						
+						par.currentNode = par.nodemap.get(paths[sf]);
+						par.currentNode.init();
 					}
 				}
 			}else{
@@ -321,9 +383,7 @@ public class TextBox {
 	int formatText() {
 		//Find color words in the text
 		int i = 0;
-		String first = "";
 		String[] raw = text.split(" ");
-		String[] parts;
 		formatted = "";
 		
 		String pattern, sub;
@@ -402,7 +462,7 @@ public class TextBox {
 		return cursor;
 	}
 
-	public void setPaths(StoryNode[] p) {
+	/*public void setPaths(StoryNode[] p) {
 		paths = p;
-	}
+	}*/
 }
