@@ -198,6 +198,12 @@ public class TextBox {
 							//System.out.println(word);
 							if (word < words.length - 1) {
 								word++;
+								//Word wrap
+								System.out.println((font.getWidth("A") * column) + font.getWidth(words[word] + " "));
+								if (24 + (font.getWidth("A") * column) + font.getWidth(words[word] + " ") > 640) {
+									line++;
+									column = -1;
+								}
 							}
 						} else if (formatted.substring(i - 1, i).equals("\n")) {
 							line++;
@@ -211,12 +217,6 @@ public class TextBox {
 							box.setColor(tcolor);
 						}
 
-						//Word wrap
-						if (24 + (font.getWidth("A") * column) + font.getWidth(words[word] + " ") > 640) {
-							line++;
-							column = 0;
-						}
-
 						box.drawString(formatted.substring(i - 1, i), 24 + (font.getWidth("A") * column), 24 + (font.getHeight()) * line);
 						column++;
 					}
@@ -228,6 +228,12 @@ public class TextBox {
 					//System.out.println(word);
 					if (word < words.length - 1) {
 						word++;
+						System.out.println((font.getWidth("A") * column) + font.getWidth(words[word] + " "));
+						//Word wrap
+						if ((24 + (font.getWidth("A") * column) + font.getWidth(words[word] + " ")) > 640) {
+							line++;
+							column = -1;
+						}
 					}
 				} else if (formatted.substring(cursor - 1, cursor).equals("\n")) {
 					line++;
@@ -240,12 +246,7 @@ public class TextBox {
 				} else {
 					box.setColor(tcolor);
 				}
-
-				//Word wrap
-				if ((24 + (font.getWidth("A") * column) + font.getWidth(words[word] + " ")) > 640) {
-					line++;
-					column = 0;
-				}
+				
 				print.play();
 				box.drawString(formatted.substring(cursor - 1, cursor), 24 + (font.getWidth("A") * column), 24 + (font.getHeight()) * line);
 				column++;
