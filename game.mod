@@ -30,11 +30,11 @@
 #If using flags_to_branch, the last node of children is the fall through. That is, if nothing is true, the game will branch there.
 
 flags=5
-characters={2ds,2DS-tan,(255,80,120)}, {vita,Vita-tan,(120,80,255)}, {gen,Genesis-tan,(160,160,160)}, {gba,GBA-tan,(205,120,205)}
+characters={2ds,2DS-tan,(255,80,120)}, {vita,Vita-tan,(120,80,255)}, {gen,Genesis-tan,(160,160,160)}, {gba,GBA-tan,(256,120,205)}, {pc,PC-tan,(245,245,245)}
 emotes=question
 nodes=start, N1B1, N1B2, N1B3, N2BA, N3BA, NE, NE2, NE3
 
-start(Gamestop.jpg, {null,gba,null}, center, null, null, null, "Oh! I didn't think you'd come to visit me so close to my birthday. Come on in!", null, null, null, {N1B1})
+start(field.png, {pc,null,vita}, left, null, null, null, "Well, if you'll excuse me, I have a massive library of unique and interesting games to refu-- er, play.", null, null, null, {N1B1})
 N1B1(Gamestop.jpg, {2ds,null,vita}, right, question, wonder.wav, null, "What should the [C:green]bread be?", {"White","Wheat"}, {1,2}, null, {N2BA})
 N1B2(Gamestop.jpg, {2ds,null,null}, left, null, null, null, "HOLY SHIT I FUCKING HATE YOU [C:green]/v/", null, null, null, null)
 N1B3(Gamestop.jpg, {2ds,null,null}, left, null, null, null, "[C:red]AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", null, null, null, null)

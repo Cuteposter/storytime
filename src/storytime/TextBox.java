@@ -84,8 +84,8 @@ public class TextBox {
 		
 		//Determine if text color should be white or black based on textbox background color
 		float Y = 0.2126f*color.r + 0.7152f*color.g + 0.0722f*color.b;
-		//System.out.println("Luminence is "+Y);
-		tcolor = Y < 0.5 ? Color.white : Color.black;
+		System.out.println("Luminence is "+Y);
+		tcolor = Y < 0.4 ? Color.white : Color.black;
 
 		options = o;
 		flags = f;
@@ -146,6 +146,10 @@ public class TextBox {
 		System.out.println(text);
 		formatText();
 		
+		float Y = 0.2126f*color.r + 0.7152f*color.g + 0.0722f*color.b;
+		System.out.println("Luminence is "+Y);
+		tcolor = Y < 0.5 ? Color.white : Color.black;
+		
 		//TODO Debug, remove
 		if(flags != null){
 			System.out.println(Arrays.toString(flags));
@@ -199,7 +203,7 @@ public class TextBox {
 							if (word < words.length - 1) {
 								word++;
 								//Word wrap
-								System.out.println((font.getWidth("A") * column) + font.getWidth(words[word] + " "));
+								//System.out.println((font.getWidth("A") * column) + font.getWidth(words[word] + " "));
 								if (24 + (font.getWidth("A") * column) + font.getWidth(words[word] + " ") > 640) {
 									line++;
 									column = -1;
@@ -228,7 +232,7 @@ public class TextBox {
 					//System.out.println(word);
 					if (word < words.length - 1) {
 						word++;
-						System.out.println((font.getWidth("A") * column) + font.getWidth(words[word] + " "));
+						
 						//Word wrap
 						if ((24 + (font.getWidth("A") * column) + font.getWidth(words[word] + " ")) > 640) {
 							line++;
