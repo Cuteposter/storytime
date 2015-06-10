@@ -148,7 +148,7 @@ public class TextBox {
 		
 		float Y = 0.2126f*color.r + 0.7152f*color.g + 0.0722f*color.b;
 		System.out.println("Luminence is "+Y);
-		tcolor = Y < 0.5 ? Color.white : Color.black;
+		tcolor = Y < 0.7 ? Color.white : Color.black;
 		
 		//TODO Debug, remove
 		if(flags != null){
