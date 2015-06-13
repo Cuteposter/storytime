@@ -54,6 +54,17 @@ public class TextBox {
 	String[] options;
 	int[] flags;
 	int side;
+	
+	public TextBox(ThisGame p) throws SlickException {
+		par = p;
+		portrait = new Image[]{null, null, null};
+		text = "";
+		
+		print = new Sound("./res/sfx/text.wav");
+		move = new Sound("./res/sfx/move.wav");
+		decide = new Sound("./res/sfx/decide.wav");
+		skip = new Sound("./res/sfx/skip.wav");
+	}
 
 	public TextBox(ThisGame p, String[] c, int s, String e, String snd, String m, String[] o, int[] f, String[] pf) throws SlickException {
 		par = p;
@@ -143,11 +154,11 @@ public class TextBox {
 
 		cursor = word = line = column = sel = 0;
 		colorList.clear();
-		System.out.println(text);
+		//System.out.println(text);
 		formatText();
 		
 		float Y = 0.2126f*color.r + 0.7152f*color.g + 0.0722f*color.b;
-		System.out.println("Luminence is "+Y);
+		//System.out.println("Luminence is "+Y);
 		tcolor = Y < 0.7 ? Color.white : Color.black;
 		
 		//TODO Debug, remove
@@ -188,7 +199,7 @@ public class TextBox {
 
 			//Typewrite text
 			if (cursor < formatted.length() + 1 && limiter == 2) { //Use the limiter here to prevent overdraw and jaggies
-				System.out.print(formatted.substring(cursor - 1, cursor));
+				//System.out.print(formatted.substring(cursor - 1, cursor));
 				if (input.isKeyPressed(Input.KEY_SPACE) && cursor < formatted.length() + 1) {
 					skip.play();
 					//box.drawImage(bg, 0, 0, new Color(0.7f, 0.25f, 0.25f, 1f));
@@ -334,12 +345,19 @@ public class TextBox {
 						par.currentNode.init();
 						decide.play();
 					}else{
-						 System.exit(1);
+						 //System.exit(1);
+						par.state = par.HUB;
 					}
 				}
 			}else if(paths != null) {
 				if (input.isKeyPressed(Input.KEY_SPACE)) {
 					if (paths.length == 1 && pflags == null) {
+						if(flags != null) {
+							for(int i=0; i<flags.length; i++) {
+								System.out.println("Setting flag "+flags[i]);
+								par.flags.set(flags[i], true);
+							}
+						}
 						par.currentNode = par.nodemap.get(paths[0]);
 						try {
 							par.currentNode.init();
@@ -370,12 +388,24 @@ public class TextBox {
 						}
 						
 						par.currentNode = par.nodemap.get(paths[sf]);
-						par.currentNode.init();
+						if(par.nodemap.get(paths[sf]) != null) {
+							par.currentNode.init();
+						} else {
+							par.state = par.HUB;
+						}
 					}
 				}
 			}else{
 				if (input.isKeyPressed(Input.KEY_SPACE)) {
-					System.exit(1);
+					if(flags != null) {
+						for(int i=0; i<flags.length; i++) {
+							System.out.println("Setting flag "+flags[i]);
+							par.flags.set(flags[i], true);
+						}
+					}
+					
+					//System.exit(1);
+					par.state = par.HUB;
 				}
 			}
 		}else{
@@ -396,7 +426,7 @@ public class TextBox {
 		Pattern p, ps;
 		Matcher m, ms;
 		for (String s: raw) {
-			pattern = "(\\[([A-z]):([A-z]+)\\]|\\[([A-z]):([0-9]+:*+)+([A-z]+),([A-z]+)\\])+([A-z\\p{Punct}]*)";
+			pattern = "(\\[([A-z]):([A-z]+)\\]|\\[([A-z]):([0-9]+:*+)+([A-z]+),([A-z]+)\\])+([A-z0-9\\p{Punct}]*)";
 			p = Pattern.compile(pattern);
 			m = p.matcher(s);
 			

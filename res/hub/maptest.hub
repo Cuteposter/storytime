@@ -1,0 +1,9 @@
+#The hub format doesn't really need much, just background image, music, and a list of nodes
+bg=maptest.png
+music=map.ogg
+
+#Hotspots
+#{x,y,w,h,link}
+#link can either be another hub, or a module
+{60,100,172,52,game.mod}
+{388,350,172,52,test2.mod}

@@ -4,7 +4,6 @@ import java.util.HashMap;
 
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Image;
-import org.newdawn.slick.SlickException;
 
 public class Characters {
 	public HashMap<String, String> namedb = new HashMap<String, String>();

@@ -36,6 +36,8 @@ public class StoryNode {
 		
 		if (p != null)
 			paths = p;
+		
+		System.out.println(this.toString());
 	}
 	
 	public void init () throws SlickException {
@@ -50,14 +52,14 @@ public class StoryNode {
 		game.dialog.pflags = this.pflags;
 		game.dialog.options = this.options;
 		game.dialog.reset();
-		System.out.println(this.toString());
+		
 		if(bgm != null) {
-			music = new Music("./res/mus/"+bgm);
+			music = game.musicmap.get(bgm);
 			if(game.music != null) {
 				if(!game.music.equals(music)) {
 					game.music = this.music;
 					//game.music.
-					game.music.loop();
+					game.music.loop(1, 0.5f);
 				}
 			}else{
 				game.music = this.music;

@@ -2,9 +2,11 @@ package storytime;
 
 import java.awt.Font;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Level;
@@ -21,21 +23,36 @@ import org.newdawn.slick.Image;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.Music;
 import org.newdawn.slick.SlickException;
-import org.newdawn.slick.Sound;
 import org.newdawn.slick.TrueTypeFont;
+import org.newdawn.slick.util.ResourceLoader;
 
 public class ThisGame extends BasicGame {
+	static AppGameContainer appgc;
+	
 	TextBox dialog;
 	TrueTypeFont f;
-	Image twods, gamestop;
+	Image title;
 	Music music;
 	Characters chardb;
 	
-	public HashMap<String, StoryNode> nodemap = new HashMap<String,StoryNode>();
+	//State constants
+	final int TITLE = 0;
+	final int HUB = 1;
+	final int MODULE = 2;
+	
+	int state;
+	
+	public HashMap<String, StoryNode> nodemap = new HashMap<String, StoryNode>();
+	public HashMap<String, Music> musicmap = new HashMap<String, Music>();
+	//public HashMap<String, HashMap<String, StoryNode>> modulemap = new HashMap<String, HashMap<String, StoryNode>>();
 	public StoryNode currentNode;
+	public Hub currentHub;
 	public String foo = "foo";
 	public ArrayList < Boolean > flags;
 
+	int blink = 1;
+	Color col = Color.white;
+	
 	//All the story nodes need to be in the global scope to be accessible for flag-dependent changes
 	//StoryNode N1B1, N1B2, N1B3, N2BA, N3BA;
 	
@@ -45,17 +62,136 @@ public class ThisGame extends BasicGame {
 
 	@Override
 	public void init(GameContainer gc) throws SlickException {
-		//Music music = new Music("res/song.ogg");
+		state = TITLE;
+		title = new Image("./res/gui/title.png");
+		parseFlags("flags.mod");
+		//preload music
+		File dir = new File("./res/mus");
+		File[] directoryListing = dir.listFiles();
+		if (directoryListing != null) {
+			for (File m : directoryListing) {
+				musicmap.put(m.getName(), new Music(m.getPath(), true));
+			}
+		}
+		//InputStream[] musicStream = {ResourceLoader.getResourceAsStream("./res/mus/title.ogg")}
+		music = musicmap.get("title.ogg");
 		
+		appgc.setTitle("I'M A BIG MEMER DUDE");
+		 
 		//System.out.println("Working Directory = " +System.getProperty("user.dir"));
 		chardb = new Characters();
 		
+		dialog = new TextBox(this);
+		dialog.init();
+		
+		//parseModule("./game.mod");
+		//currentNode = new StoryNode(this, "Gamestop.jpg", new String[]{"2ds"}, TextBox.left, null, null, null, "foo", null, null, null, null);
+		// = new TextBox(this, new String[]{"2ds"}, TextBox.left, null, null, "foo", null, null, null);
+		
+		
+		//currentNode = nodemap.get("start");
+		//currentNode.init();
+		f = new TrueTypeFont(new Font("Consolas", Font.BOLD, 16), true);
+		//music.play();
+	}
+
+	@Override
+	public void update(GameContainer gc, int i) throws SlickException {
+		Input input = gc.getInput();
+		
+		if(input.isKeyPressed(Input.KEY_R)) {
+			music.stop();
+			music = musicmap.get("title.ogg");
+			state = TITLE;
+			for(int f=0; f<flags.size(); f++) {
+				flags.set(f, false);
+			}
+		}
+		
+		if(state == TITLE) {
+			if(!music.playing()) {
+				music.loop(1, 0.5f);
+			}
+			
+			if(input.isKeyPressed(Input.KEY_SPACE)) {
+				try {
+					currentHub = new Hub(this, "maptest.hub");
+				} catch (FileNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				state = HUB;
+			}
+		}
+		
+		if(state == HUB) {
+			currentHub.update(gc, i);
+		}
+
+		if (input.isKeyPressed(Input.KEY_ESCAPE)) {
+			System.exit(0);
+		}
+	}
+
+	@Override
+	public void render(GameContainer gc, Graphics g) throws SlickException {
+		g.setFont(f);
+		
+		if(state == TITLE) {
+			if(blink == 60) {
+				if(col == Color.white){col = Color.black;}
+				else {col = Color.white;}
+				blink = 1;
+			}else{
+				blink++;
+			}
+			g.setColor(col);
+			g.drawString("Press Space to start", 320-f.getWidth("Press Space to start")/2, 256);
+			
+			g.setColor(Color.white);
+			g.drawImage(title, 320-title.getWidth()/2, 80);
+			g.drawString("CONTROLS", 320-f.getWidth("Press Space to start")/2, 324);
+			g.drawString("Space: advance, select",320-f.getWidth("Press Space to start")/2,340);
+			g.drawString("Arrow keys: move cursor",320-f.getWidth("Press Space to start")/2,356);
+			g.drawString("ESC: quit game",320-f.getWidth("Press Space to start")/2,372);
+			g.drawString("R: reset",320-f.getWidth("Press Space to start")/2,388);
+		}
+		
+		if(state == HUB) {
+			currentHub.render(gc, g);
+		}
+		
+		if(state == MODULE) {
+			currentNode.render(gc, g);
+			dialog.render(g, gc);
+			dialog.increment();
+			g.drawString(flags.toString(), 32, 32);
+		}
+		
+	}
+
+	public static void main(String[] args) {
+		try {
+			appgc = new AppGameContainer(new ThisGame("Loading..."));
+			appgc.setDisplayMode(640, 480, false);
+			//appgc.setShowFPS(false);
+			appgc.setVSync(true);
+			appgc.start();
+		} catch (SlickException ex) {
+			Logger.getLogger(ThisGame.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+	
+	public void parseModule(String module) throws SlickException {
 		//Holy shit modle parser. I don't even want to describe it
-		try(BufferedReader in = new BufferedReader(new FileReader("./game.mod"))){
+		try(BufferedReader in = new BufferedReader(new FileReader("./res/mod/"+module))){
 		    String line;
 		    float ver;
 		    int f = 0;
-			flags = new ArrayList < Boolean > ();
 			String[] nodes;
 			
     		String pattern, sub;
@@ -82,12 +218,7 @@ public class ThisGame extends BasicGame {
 		        }
 		        
 		        if(!line.startsWith("#")) {		    		
-		    		if(line.startsWith("flags")) {
-		    			f = Integer.parseInt(line.split("=")[1]);
-		    			for (int i = 0; i < f; i++) {
-		    				flags.add(false);
-		    			}
-		    		}else if(line.startsWith("nodes")) {
+		    		if(line.startsWith("nodes")) {
 		    			nodes = line.split("=")[1].split(", ");
 		    			for(String n : nodes) {
 		    				nodemap.put(n, null);
@@ -238,45 +369,41 @@ public class ThisGame extends BasicGame {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println(chardb.toString());
-		dialog = new TextBox(this, new String[]{"2ds"}, TextBox.left, null, null, "foo", null, null, null);
-		dialog.init();
 		
 		currentNode = nodemap.get("start");
 		currentNode.init();
-		f = new TrueTypeFont(new Font("Consolas", Font.BOLD, 16), true);
-		//music.play();
-	}
-
-	@Override
-	public void update(GameContainer gc, int i) throws SlickException {
-		Input input = gc.getInput();
-
-		if (input.isKeyPressed(Input.KEY_ESCAPE)) {
-			System.exit(0);
-		}
-	}
-
-	@Override
-	public void render(GameContainer gc, Graphics g) throws SlickException {
-		currentNode.render(gc, g);
 		
-		g.drawString(flags.toString(), 32, 32);
-		
-		dialog.render(g, gc);
-		dialog.increment();
 	}
-
-	public static void main(String[] args) {
-		try {
-			AppGameContainer appgc;
-			appgc = new AppGameContainer(new ThisGame("I AM A BIG MEMER DUDE"));
-			appgc.setDisplayMode(640, 480, false);
-			//appgc.setShowFPS(false);
-			appgc.setVSync(true);
-			appgc.start();
-		} catch (SlickException ex) {
-			Logger.getLogger(ThisGame.class.getName()).log(Level.SEVERE, null, ex);
+	
+	public void parseFlags(String module) throws SlickException {
+		//Holy shit modle parser. I don't even want to describe it
+		try(BufferedReader in = new BufferedReader(new FileReader("./res/mod/"+module))){
+		    String line;
+		    float ver;
+		    int f = 0;
+			flags = new ArrayList < Boolean > ();
+			
+		    while((line=in.readLine())!=null){
+		        if(line.startsWith("#Version")) {
+		        	ver = Float.parseFloat(line.split("=")[1]);
+		        }
+		        
+		        if(!line.startsWith("#")) {		    		
+		    		if(line.startsWith("flags")) {
+		    			f = Integer.parseInt(line.split("=")[1]);
+		    			for (int i = 0; i < f; i++) {
+		    				flags.add(false);
+		    			}
+		    		}
+		        }
+		    }
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+		
 	}
 }
