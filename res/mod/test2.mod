@@ -29,8 +29,6 @@
 #Option paramters must be strings (enclosed in quotation marks)
 #If using flags_to_branch, the last node of children is the fall through. That is, if nothing is true, the game will branch there.
 
-characters={2ds,2DS-tan,(255,80,120)}, {vita,Vita-tan,(120,80,255)}, {gen,Genesis-tan,(160,160,160)}, {gba,GBA-tan,(256,120,205)}, {pc,PC-tan,(245,245,245)}
-emotes=question
 nodes=start, N1B1, N1B2, N1B3, N2BA, N3BA, NE, NE2, NE3
 
 start(Gamestop.jpg, {null,pc,null}, center, null, null, song.ogg, "This is started from selecting [C:red]Test [C:red]2.", null, null, {"5"}, {N1B1,null})

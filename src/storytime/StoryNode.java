@@ -37,7 +37,7 @@ public class StoryNode {
 		if (p != null)
 			paths = p;
 		
-		System.out.println(this.toString());
+		//System.out.println(this.toString());
 	}
 	
 	public void init () throws SlickException {

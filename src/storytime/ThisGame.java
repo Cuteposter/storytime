@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Level;
@@ -24,7 +23,6 @@ import org.newdawn.slick.Input;
 import org.newdawn.slick.Music;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.TrueTypeFont;
-import org.newdawn.slick.util.ResourceLoader;
 
 public class ThisGame extends BasicGame {
 	static AppGameContainer appgc;
@@ -64,7 +62,9 @@ public class ThisGame extends BasicGame {
 	public void init(GameContainer gc) throws SlickException {
 		state = TITLE;
 		title = new Image("./res/gui/title.png");
-		parseFlags("flags.mod");
+		chardb = new Characters();
+		
+		parseInit("init.mod");
 		//preload music
 		File dir = new File("./res/mus");
 		File[] directoryListing = dir.listFiles();
@@ -79,8 +79,6 @@ public class ThisGame extends BasicGame {
 		appgc.setTitle("I'M A BIG MEMER DUDE");
 		 
 		//System.out.println("Working Directory = " +System.getProperty("user.dir"));
-		chardb = new Characters();
-		
 		dialog = new TextBox(this);
 		dialog.init();
 		
@@ -129,7 +127,12 @@ public class ThisGame extends BasicGame {
 		}
 		
 		if(state == HUB) {
-			currentHub.update(gc, i);
+			try {
+				currentHub.update(gc, i);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 
 		if (input.isKeyPressed(Input.KEY_ESCAPE)) {
@@ -208,7 +211,6 @@ public class ThisGame extends BasicGame {
 			String params, name, scene, characters, speaker, emote, sound, music, dialog, options, flagset, flagbra, children;
 			
 			String[] charlist, emotes, chars, ops, flagss, flagsb, childs;
-			ArrayList<String> namelist = new ArrayList<String>();
 			int[] flagssf;
 			int speak = 0;
 			
@@ -222,32 +224,6 @@ public class ThisGame extends BasicGame {
 		    			nodes = line.split("=")[1].split(", ");
 		    			for(String n : nodes) {
 		    				nodemap.put(n, null);
-		    			}
-		    		}else if(line.startsWith("characters")) {
-		    			charlist = line.split("=")[1].split(", ");
-		    			String[] vals;
-		    			String temp;
-		    			for(String c : charlist) {
-		    				temp = c.replace("{", "").replace("}", "");
-		    				temp = temp.replace("(", "").replace(")", "");
-		    				//System.out.println(temp);
-		    				vals = temp.split(",");
-		    				
-		    				int r = Integer.parseInt(vals[2]);
-		    				int g = Integer.parseInt(vals[3]);
-		    				int b = Integer.parseInt(vals[4]);
-		    				
-		    				namelist.add(vals[0]);
-		    				chardb.imagedb.put(vals[0], new Image("./res/char/"+vals[0]+".png"));
-		    				chardb.namedb.put(vals[0], vals[1]);
-		    				chardb.colordb.put(vals[0], new Color(r,g,b));
-		    			}
-		    		} else if(line.startsWith("emotes")) {
-		    			emotes = line.split("=")[1].split(", ");
-		    			for(String e : emotes) {
-		    				for(String c : namelist) {
-		    					chardb.imagedb.put(c+"-"+e, new Image("./res/char/"+c+"-"+e+".png"));
-		    				}
 		    			}
 		    		} else {	//Node?
 		    			m = p.matcher(line);
@@ -375,10 +351,13 @@ public class ThisGame extends BasicGame {
 		
 	}
 	
-	public void parseFlags(String module) throws SlickException {
+	public void parseInit(String module) throws SlickException {
 		//Holy shit modle parser. I don't even want to describe it
 		try(BufferedReader in = new BufferedReader(new FileReader("./res/mod/"+module))){
 		    String line;
+
+			String[] charlist, emotes;
+			ArrayList<String> namelist = new ArrayList<String>();
 		    float ver;
 		    int f = 0;
 			flags = new ArrayList < Boolean > ();
@@ -394,6 +373,32 @@ public class ThisGame extends BasicGame {
 		    			for (int i = 0; i < f; i++) {
 		    				flags.add(false);
 		    			}
+		    		} else if(line.startsWith("characters")) {
+		    			charlist = line.split("=")[1].split(", ");
+		    			String[] vals;
+		    			String temp;
+		    			for(String c : charlist) {
+		    				temp = c.replace("{", "").replace("}", "");
+		    				temp = temp.replace("(", "").replace(")", "");
+		    				//System.out.println(temp);
+		    				vals = temp.split(",");
+		    				
+		    				int r = Integer.parseInt(vals[2]);
+		    				int g = Integer.parseInt(vals[3]);
+		    				int b = Integer.parseInt(vals[4]);
+		    				
+		    				namelist.add(vals[0]);
+		    				chardb.imagedb.put(vals[0], new Image("./res/char/"+vals[0]+".png"));
+		    				chardb.namedb.put(vals[0], vals[1]);
+		    				chardb.colordb.put(vals[0], new Color(r,g,b));
+		    			}
+		    		} else if(line.startsWith("emotes")) {
+		    			emotes = line.split("=")[1].split(", ");
+		    			for(String e : emotes) {
+		    				for(String c : namelist) {
+		    					chardb.imagedb.put(c+"-"+e, new Image("./res/char/"+c+"-"+e+".png"));
+		    				}
+		    			}
 		    		}
 		        }
 		    }
@@ -404,6 +409,5 @@ public class ThisGame extends BasicGame {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
 	}
 }

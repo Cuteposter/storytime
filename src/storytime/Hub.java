@@ -36,7 +36,7 @@ public class Hub {
 		decide = new Sound("./res/sfx/decide.wav");
 	}
 	
-	public void update(GameContainer gc, int i) throws SlickException {
+	public void update(GameContainer gc, int i) throws SlickException, FileNotFoundException, IOException {
 		Input input = gc.getInput();
 		if (input.isKeyPressed(Input.KEY_UP) && sel > 0) {
 			hotspots.get(sel).selected = false;
@@ -101,7 +101,7 @@ public class Hub {
 		}
 	}
 	
-	public void loadLink(Hotspot h) throws SlickException {
+	public void loadLink(Hotspot h) throws SlickException, FileNotFoundException, IOException {
 		System.out.println(h.link);
 		
 		if(h.link.contains(".mod")) {	//module link, load the module
@@ -111,7 +111,7 @@ public class Hub {
 			game.dialog.reset();
 			game.state = game.MODULE;
 		}else if(h.link.contains(".hub")) {	//hub link
-			
+			game.currentHub = new Hub(game, h.link);
 		}
 	}
 }
